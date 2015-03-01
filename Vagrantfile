@@ -17,7 +17,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     chef.json = {
       ceph:{
         config:{
-          fsid: '5973e096-0430-4e9b-b10c-a414737639d2'          
+          fsid: '5973e096-0430-4e9b-b10c-a414737639d2',
+          global:{
+            # to ensure ceph can become active+clean on single node
+            'osd crush chooseleaf type' => 0
+          }
         },
         'monitor-secret' => 'AQDVEfNUeEv9KhAACFaBYeJUhGY09Gwo5kdBDg=='
       }
