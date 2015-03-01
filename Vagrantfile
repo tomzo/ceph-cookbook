@@ -23,12 +23,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
             'osd crush chooseleaf type' => 0
           }
         },
-        'monitor-secret' => 'AQDVEfNUeEv9KhAACFaBYeJUhGY09Gwo5kdBDg=='
+        'monitor-secret' => 'AQDVEfNUeEv9KhAACFaBYeJUhGY09Gwo5kdBDg==',
+        osd_devices: [ { 'device' => '/dev/vdb'}, { 'device' => '/dev/vdc'}  ]
       }
     }
 
     chef.add_recipe "ceph::default"
     chef.add_recipe "ceph::mon"
+    chef.add_recipe "ceph::osd"
     
   end
 end
