@@ -172,6 +172,12 @@ The ceph\_cephfs LWRP provides an easy way to mount CephFS. It will automaticall
 When using chef-solo you must provide configuration which otherwise is fetched from chef-server.
 - Set fsid of the ceph cluster - `node['ceph']['config']['fsid']`
 - Set other monitor nodes - `node['ceph']['mon_nodes']`
+- Set monitor secret - `node['ceph']['monitor-secret']`. You can generate it with
+     ceph-authtool --create-keyring /tmp/ceph.mon.keyring --gen-key -n mon. --cap mon 'allow *'
+  Then put the output of command below into attribute
+     ceph-authtool /tmp/ceph.mon.keyring --print-key --name=mon.
+- Set bootstrap osd - `node['ceph']['bootstrap_osd_key']`. You can obtain from a running monitor with
+     ceph auth get-key client.bootstrap-osd
 
 ## DEVELOPING
 

@@ -113,19 +113,21 @@ mon_addresses.each do |addr|
   end
 end
 
-# The key is going to be automatically created, We store it when it is created
-# If we're storing keys in encrypted data bags, then they've already been generated above
-if use_cephx? && !node['ceph']['encrypted_data_bags']
-  ruby_block 'get osd-bootstrap keyring' do
-    block do
-      run_out = ''
-      while run_out.empty?
-        run_out = Mixlib::ShellOut.new('ceph auth get-key client.bootstrap-osd').run_command.stdout.strip
-        sleep 2
+unless Chef::Config['solo']
+  # The key is going to be automatically created, We store it when it is created
+  # If we're storing keys in encrypted data bags, then they've already been generated above
+  if use_cephx? && !node['ceph']['encrypted_data_bags']
+    ruby_block 'get osd-bootstrap keyring' do
+      block do
+        run_out = ''
+        while run_out.empty?
+          run_out = Mixlib::ShellOut.new('ceph auth get-key client.bootstrap-osd').run_command.stdout.strip
+          sleep 2
+        end      
+        node.set['ceph']['bootstrap_osd_key'] = run_out
+        node.save
       end
-      node.set['ceph']['bootstrap_osd_key'] = run_out
-      node.save
+      not_if { node['ceph']['bootstrap_osd_key'] }
     end
-    not_if { node['ceph']['bootstrap_osd_key'] }
   end
 end
