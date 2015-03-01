@@ -30,6 +30,9 @@ def mon_nodes
   if Chef::Config['solo']
     found = node['ceph']['mon_nodes']
     found = [] if found.nil?
+    # add this node if it is a monitor as well
+    found << node if node['ceph']['is_mon']
+    return found
   else
     search_string = mon_env_search_string
 
