@@ -110,10 +110,17 @@ else
 
       dmcrypt = osd_device['encrypted'] == true ? '--dmcrypt' : ''
 
-      execute "ceph-disk-prepare on #{osd_device['device']}" do
-        command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
-        action :run
-        notifies :create, "ruby_block[save osd_device status #{index}]", :immediately
+      if Chef::Config['solo'] 
+        execute "ceph-disk-prepare on #{osd_device['device']}" do
+          command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
+          action :run
+        end
+      else
+        execute "ceph-disk-prepare on #{osd_device['device']}" do
+          command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
+          action :run
+          notifies :create, "ruby_block[save osd_device status #{index}]", :immediately
+        end
       end
 
       execute "ceph-disk-activate #{osd_device['device']}" do
@@ -127,7 +134,7 @@ else
       ruby_block "save osd_device status #{index}" do
         block do
           node.normal['ceph']['osd_devices'][index]['status'] = 'deployed'
-          node.save
+          node.save          
         end
         action :nothing
       end
