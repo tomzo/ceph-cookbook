@@ -48,22 +48,26 @@ execute 'format mon-secret as keyring' do
   only_if { mon_secret }
 end
 
-execute 'generate mon-secret as keyring' do
-  command "ceph-authtool '#{keyring}' --create-keyring --name=mon. --gen-key --cap mon 'allow *'"
-  creates "#{Chef::Config[:file_cache_path]}/#{cluster}-#{node['hostname']}.mon.keyring"
-  not_if { mon_secret }
-  notifies :create, 'ruby_block[save mon_secret]', :immediately
-end
-
-ruby_block 'save mon_secret' do
-  block do
-    fetch = Mixlib::ShellOut.new("ceph-authtool '#{keyring}' --print-key --name=mon.")
-    fetch.run_command
-    key = fetch.stdout
-    node.set['ceph']['monitor-secret'] = key
-    node.save
+if Chef::Config['solo']
+  fail 'You must set monitor secret when using chef-solo' unless mon_secret
+else
+  execute 'generate mon-secret as keyring' do
+    command "ceph-authtool '#{keyring}' --create-keyring --name=mon. --gen-key --cap mon 'allow *'"
+    creates "#{Chef::Config[:file_cache_path]}/#{cluster}-#{node['hostname']}.mon.keyring"
+    not_if { mon_secret }
+    notifies :create, 'ruby_block[save mon_secret]', :immediately
   end
-  action :nothing
+
+  ruby_block 'save mon_secret' do
+    block do
+      fetch = Mixlib::ShellOut.new("ceph-authtool '#{keyring}' --print-key --name=mon.")
+      fetch.run_command
+      key = fetch.stdout
+      node.set['ceph']['monitor-secret'] = key
+      node.save
+    end
+    action :nothing
+  end
 end
 
 execute 'ceph-mon mkfs' do
