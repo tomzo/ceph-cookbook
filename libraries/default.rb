@@ -144,6 +144,21 @@ def mon_secret
   end
 end
 
+def admin_secret
+  if node['ceph']['encrypted_data_bags']
+    fail 'Not impl'
+    #secret = Chef::EncryptedDataBagItem.load_secret(node['ceph']['mon']['secret_file'])
+    #Chef::EncryptedDataBagItem.load('ceph', 'mon', secret)['secret']
+  elsif !mon_nodes.empty?
+    mon_nodes[0]['ceph']['admin-secret']
+  elsif node['ceph']['admin-secret']
+    node['ceph']['admin-secret']
+  else
+    Chef::Log.info('No admin secret found')
+    nil
+  end
+end
+
 def quorum_members_ips
   mon_ips = []
   cmd = Mixlib::ShellOut.new("ceph --admin-daemon /var/run/ceph/ceph-mon.#{node['hostname']}.asok mon_status")

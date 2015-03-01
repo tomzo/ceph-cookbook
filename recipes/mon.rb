@@ -19,6 +19,8 @@ node.default['ceph']['is_mon'] = true
 include_recipe 'ceph'
 include_recipe 'ceph::mon_install'
 
+include_recipe 'ceph::admin'
+
 service_type = node['ceph']['mon']['init_style']
 
 directory '/var/run/ceph' do
