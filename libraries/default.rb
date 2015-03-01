@@ -27,12 +27,17 @@ def mon_env_search_string
 end
 
 def mon_nodes
-  search_string = mon_env_search_string
+  if Chef::Config['solo']
+    found = node['ceph']['mon_nodes']
+    found = [] if found.nil?
+  else
+    search_string = mon_env_search_string
 
-  if use_cephx? && !node['ceph']['encrypted_data_bags']
-    search_string = "(#{search_string}) AND (ceph_bootstrap_osd_key:*)"
+    if use_cephx? && !node['ceph']['encrypted_data_bags']
+      search_string = "(#{search_string}) AND (ceph_bootstrap_osd_key:*)"
+    end
+    search(:node, search_string)
   end
-  search(:node, search_string)
 end
 
 def osd_secret

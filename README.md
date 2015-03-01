@@ -167,6 +167,12 @@ The ceph\_cephfs LWRP provides an easy way to mount CephFS. It will automaticall
 - :use\_fuse - whether to use ceph-fuse or the kernel client to mount the filesystem. ceph-fuse is updated more often, but the kernel client allows for subdirectory mounting. Defaults to true
 - :cephfs\_subdir - which CephFS subdirectory to mount. Defaults to '/'. An exception will be thrown if this option is set to anything other than '/' if use\_fuse is also true
 
+## Chef-solo
+
+When using chef-solo you must provide configuration which otherwise is fetched from chef-server.
+- Set fsid of the ceph cluster - `node['ceph']['config']['fsid']`
+- Set other monitor nodes - `node['ceph']['mon_nodes']`
+
 ## DEVELOPING
 
 ### Style Guide
