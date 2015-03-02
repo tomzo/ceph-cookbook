@@ -46,8 +46,14 @@ keyring = "#{Chef::Config[:file_cache_path]}/#{cluster}-#{node['hostname']}.mon.
 
 execute 'format mon-secret as keyring' do
   command lazy { "ceph-authtool '#{keyring}' --create-keyring --name=mon. --add-key='#{mon_secret}' --cap mon 'allow *'" }
-  creates "#{Chef::Config[:file_cache_path]}/#{cluster}-#{node['hostname']}.mon.keyring"
+  creates keyring
   only_if { mon_secret }
+end
+
+# This is how official guide suggests 
+# http://ceph.com/docs/master/install/manual-deployment/#monitor-bootstrapping
+execute 'add client.admin to monitors keyring' do
+  command lazy { "ceph-authtool '#{keyring}' --import-keyring /etc/ceph/ceph.client.admin.keyring" }
 end
 
 if Chef::Config['solo']
