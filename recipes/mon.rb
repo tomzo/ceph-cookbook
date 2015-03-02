@@ -50,18 +50,12 @@ execute 'format mon-secret as keyring' do
   only_if { mon_secret }
 end
 
-# This is how official guide suggests 
-# http://ceph.com/docs/master/install/manual-deployment/#monitor-bootstrapping
-execute 'add client.admin to monitors keyring' do
-  command lazy { "ceph-authtool '#{keyring}' --import-keyring /etc/ceph/ceph.client.admin.keyring" }
-end
-
 if Chef::Config['solo']
   fail 'You must set monitor secret when using chef-solo' unless mon_secret
 else
   execute 'generate mon-secret as keyring' do
     command "ceph-authtool '#{keyring}' --create-keyring --name=mon. --gen-key --cap mon 'allow *'"
-    creates "#{Chef::Config[:file_cache_path]}/#{cluster}-#{node['hostname']}.mon.keyring"
+    creates keyring
     not_if { mon_secret }
     notifies :create, 'ruby_block[save mon_secret]', :immediately
   end
@@ -76,6 +70,12 @@ else
     end
     action :nothing
   end
+end
+
+# This is how official guide suggests 
+# http://ceph.com/docs/master/install/manual-deployment/#monitor-bootstrapping
+execute 'add client.admin to monitors keyring' do
+  command lazy { "ceph-authtool '#{keyring}' --import-keyring /etc/ceph/ceph.client.admin.keyring" }
 end
 
 execute 'ceph-mon mkfs' do
