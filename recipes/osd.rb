@@ -96,7 +96,9 @@ else
     devices = Hash[(0...devices.size).zip devices] unless devices.kind_of? Hash
 
     devices.each do |index, osd_device|
-      unless osd_device['status'].nil?
+      # lets check physical status of the device
+      prepared = system "ceph-disk list | grep #{osd_device['device']} | grep prepared -q"
+      if prepared
         Log.info("osd: osd_device #{osd_device} has already been setup.")
         next
       end
@@ -110,33 +112,13 @@ else
 
       dmcrypt = osd_device['encrypted'] == true ? '--dmcrypt' : ''
 
-      if Chef::Config['solo'] 
-        execute "ceph-disk-prepare on #{osd_device['device']}" do
-          command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
-          action :run
-        end
-      else
-        execute "ceph-disk-prepare on #{osd_device['device']}" do
-          command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
-          action :run
-          notifies :create, "ruby_block[save osd_device status #{index}]", :immediately
-        end
+      execute "ceph-disk-prepare on #{osd_device['device']}" do
+        command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
+        action :run
       end
 
       execute "ceph-disk-activate #{osd_device['device']}" do
         only_if { osd_device['type'] == 'directory' }
-      end
-
-      # we add this status to the node env
-      # so that we can implement recreate
-      # and/or delete functionalities in the
-      # future.
-      ruby_block "save osd_device status #{index}" do
-        block do
-          node.normal['ceph']['osd_devices'][index]['status'] = 'deployed'
-          node.save          
-        end
-        action :nothing
       end
     end
     service 'ceph_osd' do
