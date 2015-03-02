@@ -103,6 +103,12 @@ else
         next
       end
 
+      active = system "ceph-disk list | grep #{osd_device['device']} | grep active -q"
+      if active
+        Log.info("osd: osd_device #{osd_device} is already active.")
+        next
+      end
+
       directory osd_device['device'] do # ~FC022
         owner 'root'
         group 'root'
