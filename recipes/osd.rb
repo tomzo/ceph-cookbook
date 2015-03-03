@@ -118,8 +118,11 @@ else
 
       dmcrypt = osd_device['encrypted'] == true ? '--dmcrypt' : ''
 
+      fstype = node['ceph']['osd']['fs-type'] 
+      fstype = osd_device['fs-type'] if osd_device['fs-type']
+
       execute "ceph-disk-prepare on #{osd_device['device']}" do
-        command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
+        command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']} --fs-type #{fstype}"
         action :run
       end
 

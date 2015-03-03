@@ -27,7 +27,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         },
         'monitor-secret' => 'AQDVEfNUeEv9KhAACFaBYeJUhGY09Gwo5kdBDg==',
         'admin-secret' => 'AQCPZfNUuP5WHxAAMcUqobR4wzTmiTp1KlLofQ==',
-        osd_devices: [ { 'device' => '/dev/vdb'}, { 'device' => '/dev/vdc'}, { 'device' => '/dev/vdd'}  ]
+        osd_devices: [ { 'device' => '/dev/vdb', 'fs-type' => 'btrfs' }, { 'device' => '/dev/vdc'}, { 'device' => '/dev/vdd'}  ]
       }
     }
 
