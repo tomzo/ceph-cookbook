@@ -21,6 +21,7 @@ apt_repository 'ceph' do
   distribution distribution_codename
   components ['main']
   key node['ceph']['debian'][branch]['repository_key']
+  ignore_failure node['ceph']['debian']['ignore_failure']
 end
 
 apt_repository 'ceph-extras' do
